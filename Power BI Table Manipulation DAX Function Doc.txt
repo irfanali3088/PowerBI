@@ -1,0 +1,366 @@
+Table Manipulation DAX Functions
+--------------------------------
+
+ADDCOLUMNS
+SUMMARIZE
+GROUPBY
+DATATABLE
+UNION
+EXCEPT
+INTERSECT
+NATURALINNERJOIN and NATURALOUTERJOIN
+ROW
+
+
+1. ADDCOLUMNS:
+--------------
+
+ADDCOLUMNS is DAX aggregation function, 
+used to Adds calculated columns 
+to the given table or table expression.
+
+It’s comes under Table Manipulation DAX Functions category. 
+It will return a table with all its original columns and the 
+added ones.
+
+
+sample Dataset :- SuperStoreUS-2015.xlxs
+
+Select Product Category,Product Sub Category,Unit Price
+
+Go to Modeling tab and click on New Table
+here we will write DAX formula for ADDCOLUMNS function.
+
+So now, we will multiply ‘Unit Price‘ by 1000 and store into new 
+column ‘TotalPrice‘.
+
+Orders_New = ADDCOLUMNS(Orders, "TotalPrice", 
+                                    Orders[Unit Price]*1000)
+
+After that click to commit, 
+it will create new table as name Orders_New and 
+under that table you will see 
+TotalPrice new column, result as
+
+
+
+
+2. SUMMARIZE
+------------
+
+Returns a summary table for the requested totals over a 
+set of groups. 
+Its comes under Table Manipulation DAX Functions category.
+
+
+sample Dataset : SuperStoreUS-2015.xlxs
+
+Go to Modeling tab and click to Table
+
+DAX for Summarize table
+
+Summarize Table =
+SUMMARIZE(Orders,--- Table Name
+Orders[Region], Orders[Product Category],
+"Total Sale", SUM(Orders[Sales]),
+"Total Profit", SUM(Orders[Profit]),
+"Total Discount", SUM(Orders[Discount]),
+"Total UnitPrice", SUM(Orders[Unit Price]))
+
+--------------------------------------------------------
+
+Using filter for specific Region of East and Central
+
+Summarize Table with filter = 
+SUMMARIZE(Orders,
+Orders[Region], Orders[Product Category],
+"Total Sale", SUMX(FILTER(Orders, 
+Orders[Region] in {"East","Central"}), Orders[Sales]),
+"Total Profit", SUM(Orders[Profit]),
+"Total Discount", SUM(Orders[Discount]),
+"Total UnitPrice", SUM(Orders[Unit Price]))
+
+----------------------------------------------------------
+
+3. DAX – GROUPBY Function
+--------------------------
+
+Returns a table with a set of selected columns. 
+Its comes under Table Manipulation DAX Functions 
+category.
+GROUP BY permits DAX CURRENTGROUP function to 
+be used inside aggregation functions in the extension 
+columns that it adds.
+It attempts to reuse the data that has been grouped 
+making it highly performant.
+
+DAX GROUPBY function is similar to DAX SUMMARIZE 
+function. 
+However, GROUPBY does not do an implicit 
+CALCULATE for any extension columns that it adds.
+
+The expression used in GroupBy may include any 
+of the “X” aggregation functions, 
+such as SUMX, AVERAGEX, MINX, MAXX, etc.
+
+DAX CALCULATE function and calculated fields are 
+not allowed in the expression.
+
+groupBy_columnName must be either in table or 
+in a related table.
+
+Each name must be enclosed in double quotation marks.
+
+This function is not supported for use in DirectQuery mode when used in calculated columns or 
+row-level security (RLS) rules.
+
+CURRENTGROUP function can only be used in an expression that defines a column within the GROUPBY function.
+
+sample Dataset : - SuperStoreUS-2015.xlxs
+
+Create new table, Go to Modeling tab and click to Table
+
+GroupByTable =
+GROUPBY(Orders, 
+Orders[Region], 
+Orders[Product Category],
+"Sale", SUMX(CURRENTGROUP(),Orders[Sales]),
+"Profit", SUMX(CURRENTGROUP(),Orders[Profit]))
+
+
+Working of Nested GROUPBY:-
+It will return MAX Product Category Sales region wise.
+
+GroupByNEST = 
+GROUPBY(
+GROUPBY(Orders, Orders[Region], Orders[Product Category],
+"TotalSale", SUMX(CURRENTGROUP(),Orders[Sales])),
+Orders[Region],
+"MAX Sales", MAXX(CURRENTGROUP(),[TotalSale]))
+
+----------------------------------------------------------
+
+4.DATATABLE
+-----------
+
+Datatable is a DAX function, using this function you can 
+create Static Dataset/ Table in Power BI, 
+that cannot be refreshed but you can modify it.
+
+Power BI Data Types as below:
+
+BOOLEAN (True/False)
+CURRENCY (Fixed Decimal Number)
+DATETIME (Date/Time)
+DOUBLE (Decimal Number)
+INTEGER (Whole Number)
+STRING (Text)
+
+ Go to Modeling tab and click on New table
+
+Sales_Range_Datatable =
+DATATABLE ("Sales Range", STRING,
+			"Min Sales", INTEGER,
+			"Max Sales", INTEGER,
+		{
+			{ "Low", 0, 1000 },
+			{ "Medium", 1001, 10000 },
+			{ "High", 10001, 50000 }
+		}
+			)
+
+Table created successfully.
+
+---------------------------------------------------------------
+
+5. DAX – UNION function 
+-------------------------
+
+UNION is a Power BI DAX function, 
+it is used to combine two or more tables rows. 
+Its comes under Table Manipulation DAX Functions category.
+
+Refer similar DAX Post – EXCEPT, INTERSECT
+
+
+Points to be remember:
+----------------------
+The tables should be same number of columns.
+
+Columns are combined by position in their respective tables.
+
+The column names in the return table will match the 
+column names in the first Table.
+
+It returns the all tables rows, including duplicate rows.
+
+Let’s start with an example
+
+		Two sample tables with data as below
+
+
+Table 1 has 3 rows and Table 2 has 3 rows each with 3 columns
+
+	TABLE_1								TABLE_2
+ID	Name	   Country			ID	Name		Country
+1       A	    	  LDN					1      D		 			 UAE	
+2	 		 B		  MYS					2	 		E              KSA
+3			 C       IND					3       F              AUS
+
+Go to Modeling Tab, click on New Table
+
+After that one DAX formula write as below
+
+Union_Result = UNION(Table_1,Table_2)
+
+
+6. EXCEPT DAX Function 
+----------------------
+
+EXCEPT DAX function is used to returns the 
+rows of one table which do not present in another table. 
+Its comes under Table Manipulation DAX Functions category.
+
+Refer similar DAX Post – INTERSECT, UNION
+
+Note:
+The two tables must have the same number of columns.
+Columns are compared based on positioning.
+This function is not supported for use in Direct Query mode.
+
+Table-1
+
+ID	Product	Price
+1	Bike	        50000
+2	Car					400000
+3	Cycle				15000
+4	Bus					2500000
+5	Truck				3500000
+
+Table-2
+
+ID	Product	Price
+1	Bike	        50000
+2	Car					400000
+5	Truck				3500000
+6	AC					500000
+7	Fan					5000
+
+Create a new table- Go to Modeling tab and click on table icon.
+
+Write DAX formula
+
+Except = EXCEPT('Table-1', 'Table-2')
+
+Except DAX = EXCEPT('Table-2', 'Table-1')
+
+7. INTERSECT DAX Function
+--------------------------
+
+INTERSECT DAX function – compares two tables and returns common rows. 
+The output of INTERSECT function is a table with the common rows. 
+Its comes under Table Manipulation DAX Functions category.
+ 
+Intersect DAX= INTERSECT('Table-1', 'Table-2')
+
+it will return the common rows of Table-1 and Table-2.
+
+
+8. NATURALINNERJOIN and NATURALOUTERJOIN
+----------------------------------------
+
+NATURALINNERJOIN & NATURALLEFTOUTERJOIN 
+both DAX functions are used to perform the joins 
+between 
+two tables, these functions comes under Table manipulation 
+functions category.
+
+Common Usage note:
+------------------
+
+Columns being joined on must have the 
+same data type in both tables.
+
+These functions does not support Direct Query mode.
+
+The names of the columns that define the relationship 
+need to be different.
+
+Table: Product
+
+Id	Product		  Qty
+1		Bike	        30
+2		Car					12
+3		AC					3
+4		Bus					20
+
+Table: Price
+
+Item	        Price
+Bike	       60000
+Bus				1500000
+AC				50000
+Car				500000
+Truck			2500000
+Lights			3000
+
+Create a relationship between both tables 
+between Product T1 and Item T2
+
+NATURALINNERJOIN
+
+Performs an inner join of a table with another table. 
+
+The tables are joined on common columns (by name) in the two tables.
+
+The NATURALINNERJOIN function joins the left table with right table using the Inner join semantics.
+
+This function returns a table with matching values in both tables.
+
+Go to the Modeling tab > click on create a new table icon.
+
+write a DAX function for inner join-
+
+InnerJoin = NATURALINNERJOIN('Product', 'Price')
+
+returns new table with matching values in both tables.
+
+NATURALLEFTOUTERJOIN
+
+Performs an inner join of a table with another table. 
+The tables are joined on common columns (by name) 
+in the two tables.
+
+The NATURALLEFTOUTERJOIN function joins the 
+left table with right table 
+using the left outer join semantics.
+
+This function returns all records from the left table (table1), 
+and the matched records from the right table (table2).
+
+LeftOuterJoin = NATURALLEFTOUTERJOIN('Price', 'Product')
+
+returns all records from the left table, and the matched records from the right table.
+
+9. ROW DAX Function
+-------------------
+
+Row DAX function returns a table with a single row containing values that result 
+from the expressions given to each column.
+
+The ROW function returns a single row table.
+
+Dataset:- Global Super Store 2016
+
+Now add new table using Dax expression – 
+Go to Modeling Tab > Select “Write a DAX expression to create a new table”.
+
+Table = ROW("Total Sales", SUM(Orders[Sales]),
+"Total Profit", SUM(Orders[Profit]),
+"Total Discount", SUM(Orders[Discount]))
+
+This function will return single row table with Total sale, profit & discount.
+
+
+
+
